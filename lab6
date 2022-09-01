@@ -1,34 +1,38 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-PlayTennis= pd.read_csv(&#39;PlayTennis.csv&#39;)
 from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
+from posixpath import split
 from sklearn.preprocessing import LabelEncoder
-Le = LabelEncoder()
+le = LabelEncoder()
 
-PlayTennis[&#39;outlook&#39;] = Le.fit_transform(PlayTennis[&#39;outlook&#39;])
-PlayTennis[&#39;temp&#39;] = Le.fit_transform(PlayTennis[&#39;temp&#39;])
-PlayTennis[&#39;humidity&#39;] = Le.fit_transform(PlayTennis[&#39;humidity&#39;])
-PlayTennis[&#39;windy&#39;] = Le.fit_transform(PlayTennis[&#39;windy&#39;])
-PlayTennis[&#39;play&#39;] = Le.fit_transform(PlayTennis[&#39;play&#39;])
+df = pd.read_csv("heart.csv")
+df = df[:200]
 
-PlayTennis
 
-y = PlayTennis[&#39;play&#39;]
-X = PlayTennis.drop([&#39;play&#39;],axis=1)
-X_train, X_test, y_train, y_test= train_test_split(X,y,test_size= 0.4)
+df["label"]=le.fit_transform(df["label"])
+df["label"]
 
-from sklearn import tree
+y = df["label"]
+x = df.drop("label", axis=1) 
+
+
+
+X_train, X_test, y_train ,y_test = train_test_split(x,y,test_size =0.3, shuffle= True)
+
 
 from sklearn.tree import DecisionTreeClassifier
-dtree= DecisionTreeClassifier(criterion = &#39;entropy&#39;)
-dtree.fit(X_train,y_train)
-predictions= dtree.predict(X_test)
-from sklearn.metrics import classification_report, confusion_matrix
+dtree = DecisionTreeClassifier(criterion="entropy")
+dtree.fit(X_train, y_train)
 
-print(confusion_matrix(y_test,predictions))
-print(&#39;\n&#39;)
-print(classification_report(y_test,predictions))
-tree.plot_tree(dtree)
+prediction = dtree.predict(X_test)
+
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+print(f"Accuracy : {accuracy_score(y_test, prediction)}\n")
+classification_report(y_test, prediction)
+
+
+print(confusion_matrix(y_test,prediction))
