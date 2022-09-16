@@ -1,61 +1,93 @@
-from sklearn.model_selection import train_test_split
-import numpy as np
 import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-
-
-df = pd.read_csv("heart.csv")
-df.columns
-
-for i in df.columns:
-    print(f"{i}:\n{df[i].value_counts()}")
-    print()
-df
-
-
-
-
-
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split
-import numpy as np
-import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTEENN
 from posixpath import split
 from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 
 df = pd.read_csv("heart.csv")
-df = df[:200]
+df 
+
+df.fraud.value_counts()
+
+df.gender = pd.Series(LabelEncoder().fit_transform(df.gender))
+df.age = pd.Series(LabelEncoder().fit_transform(df.age))
+df
+
+x = df[['age', 'gender', 'category', 'amount']]
+y = df[['fraud']]
+print(x, y)
 
 
-df["label"]=le.fit_transform(df["label"])
-df["label"]
+sm = SMOTE(random_state=1)
+x_res, y_res = sm.fit_resample(x, y)
+y_res.value_counts()
 
-y = df["label"]
-x = df.drop("label", axis=1) 
-
-
-
-X_train, X_test, y_train ,y_test = train_test_split(x,y,test_size =0.3, shuffle= True)
+smenn = SMOTEENN(random_state=1)
+x_res_smenn, y_res_smenn = smenn.fit_resample(x, y)
+y_res_smenn.value_counts()
 
 
-from sklearn.tree import DecisionTreeClassifier
-dtree = DecisionTreeClassifier(criterion="entropy")
-dtree.fit(X_train, y_train)
+x_train, x_test, y_train, y_test = train_test_split(x_res, y_res, test_size=0.3, random_state=1, shuffle=True, stratify=y_res)
 
-prediction = dtree.predict(X_test)
-
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-
-print(f"Accuracy : {accuracy_score(y_test, prediction)}\n")
-classification_report(y_test, prediction)
+x_train_smenn, x_test_smenn, y_train_smenn, y_test_smenn = train_test_split(x_res_smenn, y_res_smenn, test_size=0.3, random_state=1, shuffle=True, stratify
 
 
-print(confusion_matrix(y_test,prediction))
+y_train.value_counts()
+
+
+clf = DecisionTreeClassifier(criterion="entropy")
+clf.fit(x_train, y_train)
+
+clf_smenn = DecisionTreeClassifier(criterion="entropy")
+clf_smenn.fit(x_train_smenn, y_train_smenn)
+
+
+predictions = clf.predict(x_test)
+predictions_smenn = clf_smenn.predict(x_test_smenn)
+
+
+conf_matrix = confusion_matrix(y_test, predictions)
+print(conf_matrix)
+matrix_df = pd.DataFrame(conf_matrix)
+
+ax = plt.axes()
+sns.heatmap(matrix_df, annot=True, fmt="g", ax=ax, cmap="magma")
+ax.set_title('Confusion Matrix - Decision Tree - SMOTE')
+ax.set_xlabel("Predicted label", fontsize =15)
+ax.set_xticklabels(['Not Fraud', 'Fraud'])
+ax.set_ylabel("True Label", fontsize=15)
+ax.set_yticklabels(['Not Fraud', 'Fraud'], rotation = 0)
+plt.show()
+
+
+conf_matrix_smenn = confusion_matrix(y_test_smenn, predictions_smenn)
+print(conf_matrix_smenn)
+matrix_df_smenn = pd.DataFrame(conf_matrix_smenn)
+
+ax = plt.axes()
+sns.heatmap(matrix_df_smenn, annot=True, fmt="g", ax=ax, cmap="magma")
+ax.set_title('Confusion Matrix - Decision Tree - SMOTEENN')
+ax.set_xlabel("Predicted label", fontsize =15)
+ax.set_xticklabels(['Not Fraud', 'Fraud'])
+ax.set_ylabel("True Label", fontsize=15)
+ax.set_yticklabels(['Not Fraud', 'Fraud'], rotation = 0)
+plt.show()
+
+print(classification_report(y_test, predictions))
+print("\n", classification_report(y_test_smenn, predictions_smenn))
+
+
+print(f"Accuracy: {accuracy_score(y_test, predictions) * 100}%")
+print(f"Accuracy: {accuracy_score(y_test_smenn, predictions_smenn) * 100}%")
+
 
 
 
