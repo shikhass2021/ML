@@ -1,23 +1,46 @@
-import numpy as nm
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+from correlation_graph import show_correlation_graph
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC, SVR
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, mean_squared_error
+from mlxtend.plotting import plot_decision_regions
+import seaborn as sns
+import numpy as np
 
-from sklearn import svm
+
+df = pd.read_csv("heart.csv") 
+df
+
+df.describe()
+
+df.info()
+
+df.URL_of_Anchor.value_counts()
+
+show_correlation_graph(df, (30, 30))
 
 
-#importing datasets  
-data_set= pd.read_csv('heart.csv')  
-  
-#Extracting Independent and dependent Variable  
-x= data_set.iloc[:, [2,3]].values  
-y= data_set.iloc[:, 4].values  
-  
-# Splitting the dataset into training and test set.  
-from sklearn.model_selection import train_test_split  
-x_train, x_test, y_train, y_test= train_test_split(x, y, test_size= 0.25, random_state=0)  
-#feature Scaling  
-from sklearn.preprocessing import StandardScaler    
-st_x= StandardScaler()    
-x_train= st_x.fit_transform(x_train)    
-x_test= st_x.transform(x_test)  
-data_set
+X = df[["age", "sex", "cp", "chol"]]
+Y = df[["Result"]]
+print(X, Y)
+
+
+Y.value_counts()
+
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=1, stratify=Y)
+
+
+print(f"Accuracy score using linear kernel: {accuracy_score(y_test, y_pred_linear)}")
+
+rbf_svc = SVC(C=C)
+rbf_svc.fit(x_train, y_train.values.ravel())
+y_pred_rbf = rbf_svc.predict(x_test)
+
+
+print(f"Accuracy score using RBF kernel: {accuracy_score(y_test, y_pred_rbf)}")
+
+
+poly_svc = SVC(kernel="poly", degree=3, C=C)
+poly_svc.fit(x_train, y_train.values.ravel())
+y_pred_poly = poly_svc.predict(x_test)
